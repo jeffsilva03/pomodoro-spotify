@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}Entrar — FOCO!{% endblock %}
+{% block content %}
+<div class="auth-bg">
+  <div class="auth-card">
+    <div class="auth-logo">
+      <span class="logo-mark"></span>
+      <span class="logo-text">FOCO!</span>
+    </div>
+    <h1 class="auth-title">Bem-vindo de volta</h1>
+    <p class="auth-sub">Retome seu foco onde parou.</p>
+
+    <form method="POST" class="auth-form">
+      <div class="field">
+        <label>Email</label>
+        <input type="email" name="email" placeholder="seu@email.com" required autofocus>
+      </div>
+      <div class="field">
+        <label>Senha</label>
+        <input type="password" name="password" placeholder="••••••••" required>
+      </div>
+      <button type="submit" class="btn-primary">Entrar</button>
+    </form>
+
+    <p class="auth-switch">Não tem conta? <a href="{{ url_for('register') }}">Criar conta</a></p>
+  </div>
+
+  <div class="auth-deco">
+    <div class="deco-ring deco-ring--1"></div>
+    <div class="deco-ring deco-ring--2"></div>
+    <div class="deco-ring deco-ring--3"></div>
+    <div class="deco-label">foco / pausa / repita</div>
+  </div>
+</div>
+{% endblock %}

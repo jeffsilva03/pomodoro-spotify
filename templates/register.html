@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}Criar conta — FOCO!{% endblock %}
+{% block content %}
+<div class="auth-bg">
+  <div class="auth-card">
+    <div class="auth-logo">
+      <span class="logo-mark"></span>
+      <span class="logo-text">FOCO!</span>
+    </div>
+    <h1 class="auth-title">Criar conta</h1>
+    <p class="auth-sub">Comece a focar com música hoje.</p>
+
+    <form method="POST" class="auth-form">
+      <div class="field">
+        <label>Email</label>
+        <input type="email" name="email" placeholder="seu@email.com" required autofocus>
+      </div>
+      <div class="field">
+        <label>Senha <span class="hint">(mín. 6 caracteres)</span></label>
+        <input type="password" name="password" placeholder="••••••••" required minlength="6">
+      </div>
+      <button type="submit" class="btn-primary">Criar conta</button>
+    </form>
+
+    <p class="auth-switch">Já tem conta? <a href="{{ url_for('login') }}">Entrar</a></p>
+  </div>
+
+  <div class="auth-deco">
+    <div class="deco-ring deco-ring--1"></div>
+    <div class="deco-ring deco-ring--2"></div>
+    <div class="deco-ring deco-ring--3"></div>
+    <div class="deco-label">foco / pausa / repita</div>
+  </div>
+</div>
+{% endblock %}

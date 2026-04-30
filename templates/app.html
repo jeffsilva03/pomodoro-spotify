@@ -1,0 +1,1167 @@
+{% extends "base.html" %}
+{% block title %}FOCO!{% endblock %}
+{% block content %}
+<div class="layout">
+
+  <!-- ── Sidebar ── -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <span class="logo-mark"></span>
+      <span class="logo-text">FOCO!</span>
+    </div>
+
+    <nav class="sidebar-nav">
+      <button class="nav-item nav-item--active" data-panel="pomodoro">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        Timer
+      </button>
+      <button class="nav-item" data-panel="music">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+        Música
+      </button>
+      <button class="nav-item" data-panel="stats">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+        Estatísticas
+      </button>
+      <button class="nav-item" data-panel="goals">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
+        Metas
+      </button>
+      <button class="nav-item" data-panel="missions">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+        Missões
+      </button>
+      <button class="nav-item" data-panel="schedule">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        Agenda
+      </button>
+      <button class="nav-item" data-panel="tasks">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+        Tarefas
+      </button>
+    </nav>
+
+    <div class="sidebar-user">
+      <div class="user-avatar">{{ user.email[0].upper() }}</div>
+      <div class="user-info">
+        <span class="user-email">{{ user.email }}</span>
+        {% if user.spotify_connected %}
+          <span class="spotify-badge">
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="#1DB954"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/></svg>
+            Spotify
+          </span>
+        {% endif %}
+      </div>
+      <a href="{{ url_for('logout') }}" class="logout-btn" title="Sair">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      </a>
+    </div>
+  </aside>
+
+  <!-- ── Main ── -->
+  <main class="main">
+
+    <!-- ════ Panel: Pomodoro ════ -->
+    <section class="panel panel--active" id="panel-pomodoro">
+      <div class="panel-inner">
+
+        <div class="pomo-left">
+          <div class="presets-row">
+            <button class="preset {% if settings.focus_minutes == 25 %}preset--active{% endif %}" data-focus="25" data-break="5">25 / 5</button>
+            <button class="preset {% if settings.focus_minutes == 30 %}preset--active{% endif %}" data-focus="30" data-break="5">30 / 5</button>
+            <button class="preset {% if settings.focus_minutes == 50 %}preset--active{% endif %}" data-focus="50" data-break="10">50 / 10</button>
+          </div>
+
+          <div class="focus-modes-row">
+            <button class="focus-mode-btn icon-label" data-mode="deep" title="Timer longo + pausa bloqueada + música travada"><svg class="ui-icon" aria-hidden="true"><use href="#icon-brain"></use></svg><span>Deep Work</span></button>
+            <button class="focus-mode-btn icon-label" data-mode="study" title="Pomodoro normal"><svg class="ui-icon" aria-hidden="true"><use href="#icon-book"></use></svg><span>Estudo Leve</span></button>
+            <button class="focus-mode-btn icon-label" data-mode="creative" title="Música livre + tempo flexível"><svg class="ui-icon" aria-hidden="true"><use href="#icon-palette"></use></svg><span>Criativo</span></button>
+          </div>
+
+          <div id="modeIndicator" class="mode-indicator hidden"></div>
+
+          <div class="timer-wrap">
+            <svg class="timer-svg" viewBox="0 0 240 240">
+              <circle class="ring-bg" cx="120" cy="120" r="108"/>
+              <circle class="ring-progress" id="ringProgress" cx="120" cy="120" r="108"/>
+            </svg>
+            <div class="timer-core">
+              <div class="timer-phase" id="phaseLabel">FOCO</div>
+              <div class="timer-display" id="timerDisplay">{{ '%02d'|format(settings.focus_minutes) }}:00</div>
+              <div class="timer-cycles" id="cycleCounter">ciclo 1 de {{ settings.cycles }}</div>
+            </div>
+          </div>
+
+          <div class="timer-controls">
+            <button class="ctrl-btn ctrl-btn--secondary" id="resetBtn">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-6.51"/></svg>
+            </button>
+            <button class="ctrl-btn ctrl-btn--primary" id="startBtn">Iniciar</button>
+            <button class="ctrl-btn ctrl-btn--secondary" id="skipBtn">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="5 4 15 12 5 20"/><line x1="19" y1="4" x2="19" y2="20"/></svg>
+            </button>
+          </div>
+
+          <div class="cycle-dots" id="cycleDots"></div>
+
+          <div class="distraction-badge hidden" id="distractionBadge">
+            <span class="icon-label"><svg class="ui-icon" aria-hidden="true"><use href="#icon-eye"></use></svg><span>Distrações:</span></span><span id="distractionCount">0</span>
+          </div>
+        </div>
+
+        <div class="pomo-right">
+
+          <!-- Tab switcher -->
+          <div class="pomo-tabs">
+            <button class="pomo-tab pomo-tab--active icon-label" data-tab="settings"><svg class="ui-icon" aria-hidden="true"><use href="#icon-settings"></use></svg><span>Config</span></button>
+            {% if user.spotify_connected %}
+            <button class="pomo-tab icon-label" data-tab="quickmusic"><svg class="ui-icon" aria-hidden="true"><use href="#icon-music"></use></svg><span>Música</span></button>
+            {% else %}
+            <button class="pomo-tab icon-label" data-tab="quickjamendo"><svg class="ui-icon" aria-hidden="true"><use href="#icon-headphones"></use></svg><span>Jamendo</span></button>
+            {% endif %}
+          </div>
+
+          <!-- ── Tab: Settings ── -->
+          <div class="pomo-tab-panel" id="pomo-tab-settings">
+          <div class="settings-card">
+            <h3 class="card-title">Configurações</h3>
+            <div class="setting-row">
+              <label>Foco <span class="unit">min</span></label>
+              <div class="number-input">
+                <button class="num-btn" data-target="focusInput" data-delta="-1">−</button>
+                <input type="number" id="focusInput" value="{{ settings.focus_minutes }}" min="1" max="90">
+                <button class="num-btn" data-target="focusInput" data-delta="1">+</button>
+              </div>
+            </div>
+            <div class="setting-row">
+              <label>Pausa <span class="unit">min</span></label>
+              <div class="number-input">
+                <button class="num-btn" data-target="breakInput" data-delta="-1">−</button>
+                <input type="number" id="breakInput" value="{{ settings.break_minutes }}" min="1" max="30">
+                <button class="num-btn" data-target="breakInput" data-delta="1">+</button>
+              </div>
+            </div>
+            <div class="setting-row">
+              <label>Ciclos</label>
+              <div class="number-input">
+                <button class="num-btn" data-target="cyclesInput" data-delta="-1">−</button>
+                <input type="number" id="cyclesInput" value="{{ settings.cycles }}" min="1" max="8">
+                <button class="num-btn" data-target="cyclesInput" data-delta="1">+</button>
+              </div>
+            </div>
+            <div class="toggle-row">
+              <label>Pausar música na pausa</label>
+              <input type="checkbox" id="pauseOnBreak" class="toggle" {% if settings.pause_on_break %}checked{% endif %}>
+            </div>
+            <div class="toggle-row">
+              <label>Tocar música no foco</label>
+              <input type="checkbox" id="autoMusic" class="toggle" {% if settings.auto_music %}checked{% endif %}>
+            </div>
+            <button class="btn-save" id="saveSettings">Salvar</button>
+          </div>
+
+          {% if not user.spotify_connected %}
+          <div class="spotify-connect-card">
+            <div class="spotify-icon">
+              <svg viewBox="0 0 24 24" fill="#1DB954" width="28" height="28"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/></svg>
+            </div>
+            <p>Conecte o Spotify para ouvir músicas enquanto foca.</p>
+            <a href="{{ url_for('spotify_connect') }}" class="btn-spotify">Conectar Spotify</a>
+          </div>
+          {% endif %}
+          </div><!-- /pomo-tab-panel settings -->
+
+          {% if not user.spotify_connected %}
+          <!-- Quick Jamendo -->
+          <div class="pomo-tab-panel hidden" id="pomo-tab-quickjamendo">
+            <div class="qm-nowplaying jq-nowplaying">
+              <div class="qm-art" id="jqArt"><svg class="ui-icon" aria-hidden="true"><use href="#icon-headphones"></use></svg></div>
+              <div class="qm-info">
+                <div class="qm-title" id="jqTitle">Jamendo Focus</div>
+                <div class="qm-artist" id="jqArtist">Carregando curadoria...</div>
+                <div class="jq-progress">
+                  <div class="jm-progress-fill"></div>
+                </div>
+                <div class="jq-time jm-time">0:00 / 0:00</div>
+              </div>
+              <div class="qm-controls">
+                <button class="qm-btn" id="jqPrev" title="Anterior">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><polygon points="19 20 9 12 19 4"/><line x1="5" y1="19" x2="5" y2="5" stroke="currentColor" stroke-width="2"/></svg>
+                </button>
+                <button class="qm-btn qm-btn--play jm-play-btn" id="jqPlay" title="Tocar">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21"/></svg>
+                </button>
+                <button class="qm-btn" id="jqNext" title="Proxima">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 4 15 12 5 20"/><line x1="19" y1="5" x2="19" y2="19" stroke="currentColor" stroke-width="2"/></svg>
+                </button>
+              </div>
+            </div>
+
+            <div class="qm-search-bar">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              <input type="text" id="jqSearchInput" placeholder="Buscar no Jamendo...">
+              <button id="jqSearchBtn"><svg class="ui-icon" aria-hidden="true"><use href="#icon-search"></use></svg></button>
+            </div>
+            <div id="jqResults" class="qm-results hidden"></div>
+
+            <div class="qm-pl-label">Curadorias Jamendo</div>
+            <div id="jqPlaylists" class="jq-playlists">
+              <div class="loading-text" style="font-size:12px;padding:8px 0;">Carregando...</div>
+            </div>
+          </div>
+          {% endif %}
+
+          {% if user.spotify_connected %}
+          <!-- ── Tab: Quick Music ── -->
+          <div class="pomo-tab-panel hidden" id="pomo-tab-quickmusic">
+
+            <!-- Now playing compact -->
+            <div class="qm-nowplaying">
+              <div class="qm-art" id="qmArt">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="20" height="20"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+              </div>
+              <div class="qm-info">
+                <div class="qm-title" id="qmTitle">Nenhuma música</div>
+                <div class="qm-artist" id="qmArtist">-</div>
+              </div>
+              <div class="qm-controls">
+                <button class="qm-btn" id="qmPrev">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><polygon points="19 20 9 12 19 4"/><line x1="5" y1="19" x2="5" y2="5" stroke="currentColor" stroke-width="2"/></svg>
+                </button>
+                <button class="qm-btn qm-btn--play" id="qmPlay">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21"/></svg>
+                </button>
+                <button class="qm-btn" id="qmNext">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 4 15 12 5 20"/><line x1="19" y1="5" x2="19" y2="19" stroke="currentColor" stroke-width="2"/></svg>
+                </button>
+              </div>
+            </div>
+
+            <!-- Search -->
+            <div class="qm-search-bar">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              <input type="text" id="qmSearchInput" placeholder="Buscar músicas ou playlists...">
+              <button id="qmSearchBtn"><svg class="ui-icon" aria-hidden="true"><use href="#icon-search"></use></svg></button>
+            </div>
+            <div id="qmResults" class="qm-results hidden"></div>
+
+            <!-- Quick playlists -->
+            <div class="qm-pl-label">Playlists</div>
+            <div id="qmPlaylists" class="qm-playlists">
+              <div class="loading-text" style="font-size:12px;padding:8px 0;">Carregando...</div>
+            </div>
+          </div>
+          {% endif %}
+
+        </div><!-- /pomo-right -->
+
+      </div>
+    </section>
+
+    <!-- ════ Panel: Music ════ -->
+    <section class="panel" id="panel-music">
+      <div class="music-layout">
+
+        {% if not user.spotify_connected %}
+        <!-- ── Jamendo Player (fallback) ── -->
+        <div class="jm-layout">
+
+          <!-- Left: player -->
+          <div class="jm-player-col">
+            <div class="jm-header">
+              <div class="jm-badge icon-label"><svg class="ui-icon" aria-hidden="true"><use href="#icon-headphones"></use></svg><span>Jamendo · Modo Foco</span></div>
+              <span class="jm-subtitle">Música gratuita e licenciada para foco</span>
+            </div>
+
+            <!-- Now playing -->
+            <div class="jm-now-playing">
+              <div class="jm-np-art"><svg class="ui-icon" aria-hidden="true"><use href="#icon-music"></use></svg></div>
+              <div class="jm-np-info">
+                <div class="jm-np-title" id="">Selecione uma playlist</div>
+                <div class="jm-np-artist">-</div>
+                <div class="jm-progress-bar">
+                  <div class="jm-progress-fill"></div>
+                </div>
+                <div class="jm-time">0:00 / 0:00</div>
+              </div>
+            </div>
+
+            <!-- Controls -->
+            <div class="jm-controls">
+              <button class="jm-ctrl jm-ctrl--sm" id="jmPrevBtn">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><polygon points="19 20 9 12 19 4"/><line x1="5" y1="19" x2="5" y2="5" stroke="currentColor" stroke-width="2"/></svg>
+              </button>
+              <button class="jm-ctrl jm-ctrl--play jm-play-btn" id="jmPlayBtn">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21"/></svg>
+              </button>
+              <button class="jm-ctrl jm-ctrl--sm" id="jmNextBtn">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 4 15 12 5 20"/><line x1="19" y1="5" x2="19" y2="19" stroke="currentColor" stroke-width="2"/></svg>
+              </button>
+            </div>
+
+            <!-- Volume -->
+            <div class="jm-vol-row">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
+              <input type="range" id="jmVolSlider" min="0" max="100" value="70" class="vol-slider">
+              <span id="jmVolDisplay">70%</span>
+            </div>
+
+            <!-- Spotify connect invite -->
+            <div class="jm-spotify-invite">
+              <svg viewBox="0 0 24 24" fill="#1DB954" width="16" height="16"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/></svg>
+              Quer mais controle? <a href="{{ url_for('spotify_connect') }}">Conectar Spotify Premium</a>
+            </div>
+          </div>
+
+          <!-- Right: tabs (playlists / search / queue) -->
+          <div class="jm-right-col">
+
+            <div class="jm-tabs">
+              <button class="jm-tab jm-tab--active icon-label" data-tab="playlists"><svg class="ui-icon" aria-hidden="true"><use href="#icon-list"></use></svg><span>Playlists</span></button>
+              <button class="jm-tab icon-label" data-tab="search"><svg class="ui-icon" aria-hidden="true"><use href="#icon-search"></use></svg><span>Buscar</span></button>
+              <button class="jm-tab icon-label" data-tab="queue"><svg class="ui-icon" aria-hidden="true"><use href="#icon-clipboard"></use></svg><span>Fila</span></button>
+            </div>
+
+            <!-- Playlists tab -->
+            <div class="jm-tab-panel" id="jm-tab-playlists">
+              <div class="jm-playlist-label">Curadorias de foco</div>
+              <div id="jmPlaylists" class="jm-pl-chips">
+                <div class="loading-text">Carregando...</div>
+              </div>
+              <div class="jm-playlist-label" style="margin-top:16px">Tocando agora</div>
+              <div id="jmPlaylistLabel" class="jm-current-tag">-</div>
+            </div>
+
+            <!-- Search tab -->
+            <div class="jm-tab-panel hidden" id="jm-tab-search">
+              <div class="search-bar" style="margin-bottom:12px">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                <input type="text" id="jmSearchInput" placeholder="Buscar artista, estilo, humor...">
+                <button id="jmSearchBtn">Buscar</button>
+              </div>
+              <div id="jmSearchResults" class="jm-track-list"></div>
+            </div>
+
+            <!-- Queue tab -->
+            <div class="jm-tab-panel hidden" id="jm-tab-queue">
+              <div id="jmQueueList" class="jm-track-list">
+                <div class="loading-text">Nenhuma fila carregada.</div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+        {% else %}
+
+        <div class="player-section">
+          <div class="now-playing" id="nowPlaying">
+            <div class="np-art" id="npArt">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="32" height="32"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+            </div>
+            <div class="np-info">
+              <div class="np-title" id="npTitle">Nenhuma música</div>
+              <div class="np-artist" id="npArtist">Selecione uma faixa ou playlist</div>
+              <div class="np-bar"><div class="np-fill" id="npFill"></div></div>
+            </div>
+          </div>
+
+          <div class="player-btns">
+            <button class="pbtn" id="prevBtn" title="Anterior">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><polygon points="19 20 9 12 19 4"/><line x1="5" y1="19" x2="5" y2="5" stroke="currentColor" stroke-width="2"/></svg>
+            </button>
+            <button class="pbtn pbtn--play" id="playBtn">
+              <svg id="playIcon" width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21"/></svg>
+            </button>
+            <button class="pbtn" id="nextBtn" title="Próxima">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 4 15 12 5 20"/><line x1="19" y1="5" x2="19" y2="19" stroke="currentColor" stroke-width="2"/></svg>
+            </button>
+          </div>
+
+          <div class="vol-row">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
+            <input type="range" id="volSlider" min="0" max="100" value="70" class="vol-slider">
+            <span id="volDisplay">70%</span>
+          </div>
+        </div>
+
+        <div class="search-section">
+          <div class="search-bar">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input type="text" id="searchInput" placeholder="Buscar músicas, artistas...">
+            <button id="searchBtn">Buscar</button>
+          </div>
+
+          <div id="searchResults" class="track-list hidden"></div>
+
+          <h3 class="section-title">Suas playlists</h3>
+          <div class="playlist-search-bar">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input type="text" id="playlistSearch" placeholder="Filtrar playlists...">
+          </div>
+          <div id="playlists" class="playlist-grid">
+            <div class="loading-text">Carregando playlists...</div>
+          </div>
+        </div>
+
+        {% endif %}
+      </div>
+    </section>
+
+    <!-- ════ Panel: Stats ════ -->
+    <section class="panel" id="panel-stats">
+      <div class="stats-layout">
+        <h2 class="stats-title">Últimos 7 dias</h2>
+        <div class="stats-grid" id="statsGrid">
+          <div class="loading-text">Carregando...</div>
+        </div>
+        <div class="stats-chart" id="statsChart"></div>
+      </div>
+    </section>
+
+    <!-- ════ Panel: Goals ════ -->
+    <section class="panel" id="panel-goals">
+      <div class="goals-layout">
+        <div class="goals-header">
+          <h2 class="stats-title">Metas diárias</h2>
+          <button class="btn-add-goal" id="openGoalForm">+ Nova meta</button>
+        </div>
+
+        <div class="goal-form hidden" id="goalForm">
+          <div class="goal-form-inner">
+            <h3>Definir meta</h3>
+            <div class="goal-type-row">
+              <button class="goal-type-btn goal-type-btn--active icon-label" data-type="minutes"><svg class="ui-icon" aria-hidden="true"><use href="#icon-timer"></use></svg><span>Tempo de foco</span></button>
+              <button class="goal-type-btn icon-label" data-type="cycles"><svg class="ui-icon" aria-hidden="true"><use href="#icon-rotate"></use></svg><span>Pomodoros</span></button>
+            </div>
+            <div class="goal-input-row">
+              <input type="number" id="goalTarget" min="1" value="120" placeholder="Valor">
+              <span id="goalUnit">minutos</span>
+            </div>
+            <div class="goal-form-btns">
+              <button class="btn-cancel-goal" id="cancelGoalForm">Cancelar</button>
+              <button class="btn-save-goal" id="saveGoal">Salvar meta</button>
+            </div>
+          </div>
+        </div>
+
+        <div id="goalsList" class="goals-list">
+          <div class="loading-text">Carregando metas...</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ════ Panel: Missions ════ -->
+    <section class="panel" id="panel-missions">
+      <div class="missions-layout">
+        <div class="missions-header">
+          <h2 class="stats-title">Missões diárias</h2>
+          <p class="missions-sub icon-label"><svg class="ui-icon" aria-hidden="true"><use href="#icon-trophy"></use></svg><span>Complete missões para ganhar XP</span></p>
+        </div>
+        <div class="xp-bar-wrap">
+          <div class="xp-bar-track">
+            <div class="xp-bar-fill" id="xpBar"></div>
+          </div>
+          <span class="xp-bar-label" id="xpLabel">0 / 90 XP</span>
+        </div>
+        <div id="missionsList" class="missions-list">
+          <div class="loading-text">Carregando missões...</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ════ Panel: Schedule ════ -->
+    <section class="panel" id="panel-schedule">
+      <div class="schedule-layout">
+
+        <!-- Header -->
+        <div class="schedule-header">
+          <div class="schedule-header-left">
+            <div class="schedule-view-tabs">
+              <button class="sched-tab sched-tab--active" data-view="daily">Dia</button>
+              <button class="sched-tab" data-view="weekly">Semana</button>
+              <button class="sched-tab" data-view="monthly">Mês</button>
+            </div>
+            <div class="schedule-nav">
+              <button class="sched-nav-btn" id="schedPrev">&#8249;</button>
+              <span class="sched-date-label" id="schedDateLabel">-</span>
+              <button class="sched-nav-btn" id="schedNext">&#8250;</button>
+            </div>
+          </div>
+          <div class="schedule-header-right">
+            <button class="sched-action-btn icon-label" id="schedTemplatesBtn"><svg class="ui-icon" aria-hidden="true"><use href="#icon-clipboard"></use></svg><span>Templates</span></button>
+            <button class="sched-action-btn icon-label" id="schedCopyBtn"><svg class="ui-icon" aria-hidden="true"><use href="#icon-calendar"></use></svg><span>Copiar dia</span></button>
+            <button class="sched-action-btn sched-action-btn--primary" id="schedAddBtn">+ Novo bloco</button>
+          </div>
+        </div>
+
+        <!-- Progress -->
+        <div class="schedule-progress-bar">
+          <div class="schedule-progress-fill" id="schedProgressFill" style="width:0%"></div>
+        </div>
+
+        <!-- Body -->
+        <div class="schedule-body" id="schedBody">
+          <div class="loading-text">Carregando agenda...</div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ════ Panel: Tasks ════ -->
+    <section class="panel" id="panel-tasks">
+      <div class="tasks-layout">
+
+        <!-- Header & progress -->
+        <div class="tasks-header">
+          <div>
+            <h2 class="stats-title">Tarefas</h2>
+            <p class="tasks-sub" id="tasksProgressLabel">0 de 0 concluídas hoje</p>
+          </div>
+          <button class="btn-add-goal" id="openTaskForm">+ Nova tarefa</button>
+        </div>
+
+        <!-- Progress bar -->
+        <div class="tasks-progress-wrap">
+          <div class="tasks-progress-track">
+            <div class="tasks-progress-fill" id="tasksProgressBar" style="width:0%"></div>
+          </div>
+          <span class="tasks-progress-pct" id="tasksProgressPct">0%</span>
+        </div>
+
+        <!-- Add form -->
+        <div class="task-form hidden" id="taskForm">
+          <div class="task-form-inner">
+            <input type="text" id="taskTitleInput" placeholder="O que precisa ser feito?" maxlength="200">
+            <div class="task-form-row">
+              <select id="taskCategory">
+                <option value="pessoal">Pessoal</option>
+                <option value="estudo">Estudo</option>
+                <option value="trabalho">Trabalho</option>
+              </select>
+              <select id="taskPeriod">
+                <option value="daily">Hoje</option>
+                <option value="weekly">Esta semana</option>
+                <option value="monthly">Este mês</option>
+              </select>
+              <button class="btn-save-goal" id="saveTask">Adicionar</button>
+              <button class="btn-cancel-goal icon-only" id="cancelTaskForm" aria-label="Cancelar"><svg class="ui-icon" aria-hidden="true"><use href="#icon-x"></use></svg></button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Filters -->
+        <div class="tasks-filters">
+          <div class="task-period-tabs">
+            <button class="task-filter-btn task-filter-btn--active" data-period="daily">Hoje</button>
+            <button class="task-filter-btn" data-period="weekly">Semana</button>
+            <button class="task-filter-btn" data-period="monthly">Mês</button>
+          </div>
+          <div class="task-cat-tabs">
+            <button class="task-cat-btn task-cat-btn--active" data-cat="">Todas</button>
+            <button class="task-cat-btn icon-only" data-cat="pessoal" title="Pessoal"><svg class="ui-icon" aria-hidden="true"><use href="#icon-user"></use></svg></button>
+            <button class="task-cat-btn icon-only" data-cat="estudo" title="Estudo"><svg class="ui-icon" aria-hidden="true"><use href="#icon-book"></use></svg></button>
+            <button class="task-cat-btn icon-only" data-cat="trabalho" title="Trabalho"><svg class="ui-icon" aria-hidden="true"><use href="#icon-briefcase"></use></svg></button>
+          </div>
+        </div>
+
+        <!-- List -->
+        <div id="tasksList" class="tasks-list">
+          <div class="loading-text">Carregando tarefas...</div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- Pomodoro task overlay (mini, shown during focus) -->
+    <div class="pomo-tasks-overlay hidden" id="pomoTasksOverlay">
+      <div class="pto-title icon-label"><svg class="ui-icon" aria-hidden="true"><use href="#icon-clipboard"></use></svg><span>Tarefas do dia</span></div>
+      <div id="pomoTasksMini" class="pto-list"></div>
+    </div>
+
+  </main>
+</div>
+
+<!-- Mini player bar (bottom, shows when music panel not active) -->
+<div class="mini-player hidden" id="miniPlayer">
+  <div class="mp-info">
+    <div class="mp-dot" id="mpDot"></div>
+    <span id="mpTitle">-</span>
+  </div>
+  <div class="mp-controls">
+    <button class="mp-btn" id="mpPrev">&#9664;&#9664;</button>
+    <button class="mp-btn mp-btn--play" id="mpPlay">&#9654;</button>
+    <button class="mp-btn" id="mpNext">&#9654;&#9654;</button>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+const SPOTIFY_TOKEN = {{ spotify_token | tojson }};
+const SPOTIFY_CLIENT_ID = {{ spotify_client_id | tojson }};
+const INITIAL_SETTINGS = {
+  focus: {{ settings.focus_minutes }},
+  break: {{ settings.break_minutes }},
+  cycles: {{ settings.cycles }},
+  pauseOnBreak: {{ 'true' if settings.pause_on_break else 'false' }},
+  autoMusic: {{ 'true' if settings.auto_music else 'false' }},
+};
+</script>
+<script src="{{ url_for('static', filename='../static/js/app.js') }}"></script>
+<script>
+// ══════════════════════════════════════════════════════════════════════════════
+// FOCO! — Schedule / Agenda Module
+// ══════════════════════════════════════════════════════════════════════════════
+
+const schedState = {
+  view: 'daily',      // 'daily' | 'weekly' | 'monthly'
+  cursor: new Date(), // current date/week/month anchor
+  blocks: {},         // { 'YYYY-MM-DD': [...blocks] }
+  stats:  {},         // { 'YYYY-MM-DD': { total, done, pct } }
+  editingBlock: null, // block being edited (null = new)
+  editingDate: null,  // date string for new block
+  templates: [],
+};
+
+// ── Helpers ──────────────────────────────────────────────────────────────────
+function toISO(d) {
+  return d.toISOString().split('T')[0];
+}
+function addDays(d, n) {
+  const r = new Date(d); r.setDate(r.getDate() + n); return r;
+}
+function startOfWeek(d) {
+  const r = new Date(d);
+  const day = r.getDay();
+  r.setDate(r.getDate() - day + (day === 0 ? -6 : 1)); // Monday
+  return r;
+}
+function minutesDiff(t1, t2) {
+  const [h1,m1] = t1.split(':').map(Number);
+  const [h2,m2] = t2.split(':').map(Number);
+  return (h2*60+m2) - (h1*60+m1);
+}
+function fmtDuration(t1, t2) {
+  const min = minutesDiff(t1, t2);
+  if (min <= 0) return '';
+  if (min < 60) return `${min}min`;
+  const h = Math.floor(min/60), m = min % 60;
+  return m ? `${h}h${m}min` : `${h}h`;
+}
+
+// ── API ───────────────────────────────────────────────────────────────────────
+async function schedAPI(path, method='GET', body=null) {
+  const opts = { method, headers: {'Content-Type':'application/json'} };
+  if (body) opts.body = JSON.stringify(body);
+  const r = await fetch('/api/schedule' + path, opts);
+  return r.json();
+}
+
+async function loadScheduleRange(start, end) {
+  const data = await schedAPI(`?start=${toISO(start)}&end=${toISO(end)}`);
+  Object.assign(schedState.blocks, data.blocks || {});
+  Object.assign(schedState.stats,  data.stats  || {});
+}
+
+// ── Render helpers ────────────────────────────────────────────────────────────
+function colorClass(color) {
+  return `block-card--${color || 'accent'}`;
+}
+function chipColorClass(color) {
+  return color && color !== 'accent' ? `week-block-chip--${color}` : '';
+}
+
+function renderDailyView() {
+  const dateStr = toISO(schedState.cursor);
+  const blocks = (schedState.blocks[dateStr] || []).slice()
+    .sort((a,b) => a.start_time.localeCompare(b.start_time));
+  const body = document.getElementById('schedBody');
+
+  if (!blocks.length) {
+    body.innerHTML = `<div class="sched-empty">
+      <div class="sched-empty-icon"><svg class="ui-icon" aria-hidden="true"><use href="#icon-calendar"></use></svg></div>
+      <div>Nenhum bloco para este dia.</div>
+      <div style="font-size:12px;color:var(--text3)">Clique em "+ Novo bloco" para começar.</div>
+    </div>`;
+    return;
+  }
+
+  let html = '<div class="daily-view">';
+  blocks.forEach((b, i) => {
+    const isDone = b.status === 'done';
+    const isIP   = b.status === 'in_progress';
+    const dur    = fmtDuration(b.start_time, b.end_time);
+    html += `
+    <div class="time-block" draggable="true" data-id="${b.id}" data-pos="${b.position}">
+      <div class="time-col">
+        <span class="time-start">${b.start_time}</span>
+        <span class="time-end">${b.end_time}</span>
+      </div>
+      <div class="block-connector"></div>
+      <div class="block-card ${colorClass(b.color)} ${isDone?'block-card--done':''} ${isIP?'block-card--in-progress':''}">
+        <div class="block-top">
+          <div style="flex:1;min-width:0">
+            <div class="block-title ${isDone?'block-title--done':''}">${escHtml(b.title)}</div>
+            ${dur ? `<div class="block-duration">${dur}</div>` : ''}
+          </div>
+          <div class="block-actions">
+            <button class="block-action ${isDone?'block-action--done':''}"
+              onclick="schedToggleDone(${b.id},'${dateStr}')" title="${isDone?'Reabrir':'Concluir'}">
+              <svg class="ui-icon" aria-hidden="true"><use href="#icon-${isDone ? 'check' : 'circle'}"></use></svg>
+            </button>
+            <button class="block-action" onclick="schedEditBlock(${b.id},'${dateStr}')" title="Editar"><svg class="ui-icon" aria-hidden="true"><use href="#icon-edit"></use></svg></button>
+            <button class="block-action block-action--delete" onclick="schedDeleteBlock(${b.id},'${dateStr}')" title="Remover"><svg class="ui-icon" aria-hidden="true"><use href="#icon-x"></use></svg></button>
+          </div>
+        </div>
+      </div>
+    </div>`;
+  });
+  html += '</div>';
+  body.innerHTML = html;
+  initDragDrop(dateStr);
+  updateProgressBar(dateStr);
+}
+
+function renderWeeklyView() {
+  const monday = startOfWeek(schedState.cursor);
+  const todayStr = toISO(new Date());
+  let html = '<div class="weekly-view">';
+  const DAY_NAMES = ['Seg','Ter','Qua','Qui','Sex','Sáb','Dom'];
+  for (let i = 0; i < 7; i++) {
+    const d = addDays(monday, i);
+    const ds = toISO(d);
+    const isToday = ds === todayStr;
+    const blocks = (schedState.blocks[ds] || []).slice()
+      .sort((a,b) => a.start_time.localeCompare(b.start_time));
+    const stat = schedState.stats[ds] || {pct:0};
+    const numStr = String(d.getDate());
+    html += `<div class="week-day-col">
+      <div class="week-day-header ${isToday?'week-day-header--today':''}">
+        ${DAY_NAMES[i]}<br>
+        ${isToday
+          ? `<span class="week-day-num week-day-num--today">${numStr}</span>`
+          : `<span class="week-day-num">${numStr}</span>`}
+      </div>`;
+    blocks.forEach(b => {
+      html += `<div class="week-block-chip ${chipColorClass(b.color)} ${b.status==='done'?'week-block-chip--done':''}"
+        onclick="schedGoDaily('${ds}')" title="${escHtml(b.title)} ${b.start_time}–${b.end_time}">
+        <span style="font-size:9px;color:var(--text3)">${b.start_time}</span> ${escHtml(b.title)}
+      </div>`;
+    });
+    html += `<div class="week-day-progress">
+      <div class="week-day-progress-fill" style="width:${stat.pct||0}%"></div>
+    </div>
+    <button class="week-add-btn" onclick="schedOpenAddForDate('${ds}')">+</button>
+    </div>`;
+  }
+  html += '</div>';
+  document.getElementById('schedBody').innerHTML = html;
+  updateProgressBar(null);
+}
+
+function renderMonthlyView() {
+  const y = schedState.cursor.getFullYear();
+  const m = schedState.cursor.getMonth();
+  const firstDay = new Date(y, m, 1);
+  const lastDay  = new Date(y, m+1, 0);
+  const todayStr = toISO(new Date());
+  const DAY_NAMES = ['Seg','Ter','Qua','Qui','Sex','Sáb','Dom'];
+  let html = '<div class="monthly-view">';
+  DAY_NAMES.forEach(n => { html += `<div class="month-day-name">${n}</div>`; });
+  // leading empty cells (Monday start)
+  let startDow = firstDay.getDay(); // 0=Sun
+  startDow = startDow === 0 ? 6 : startDow - 1;
+  for (let i = 0; i < startDow; i++) {
+    html += '<div class="month-cell month-cell--empty"></div>';
+  }
+  for (let day = 1; day <= lastDay.getDate(); day++) {
+    const d = new Date(y, m, day);
+    const ds = toISO(d);
+    const isToday = ds === todayStr;
+    const stat = schedState.stats[ds] || {};
+    const pct  = stat.pct || 0;
+    const fillClass = pct >= 80 ? 'month-pct-fill--high' : pct >= 40 ? 'month-pct-fill--mid' : 'month-pct-fill--low';
+    const blockCount = (schedState.blocks[ds] || []).length;
+    html += `<div class="month-cell ${isToday?'month-cell--today':''}" onclick="schedGoDaily('${ds}')">
+      <div class="month-cell-num">${day}</div>
+      ${blockCount ? `<div class="month-block-count">${blockCount} bloco${blockCount>1?'s':''}</div>` : ''}
+      ${blockCount ? `<div class="month-pct-bar"><div class="month-pct-fill ${fillClass}" style="width:${pct}%"></div></div>` : ''}
+    </div>`;
+  }
+  html += '</div>';
+  document.getElementById('schedBody').innerHTML = html;
+  updateProgressBar(null);
+}
+
+function updateProgressBar(dateStr) {
+  const fill = document.getElementById('schedProgressFill');
+  if (!fill) return;
+  if (!dateStr) { fill.style.width = '0%'; return; }
+  const stat = schedState.stats[dateStr] || {pct:0};
+  fill.style.width = (stat.pct || 0) + '%';
+}
+
+function updateDateLabel() {
+  const lbl = document.getElementById('schedDateLabel');
+  if (!lbl) return;
+  const MONTHS = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+  if (schedState.view === 'daily') {
+    const d = schedState.cursor;
+    const today = toISO(new Date());
+    const ds    = toISO(d);
+    const dayNames = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
+    const prefix = ds === today ? 'Hoje · ' : '';
+    lbl.textContent = `${prefix}${dayNames[d.getDay()]}, ${d.getDate()} ${MONTHS[d.getMonth()]}`;
+  } else if (schedState.view === 'weekly') {
+    const mon = startOfWeek(schedState.cursor);
+    const sun = addDays(mon, 6);
+    lbl.textContent = `${mon.getDate()} ${MONTHS[mon.getMonth()]} – ${sun.getDate()} ${MONTHS[sun.getMonth()]}`;
+  } else {
+    const d = schedState.cursor;
+    lbl.textContent = `${MONTHS[d.getMonth()]} ${d.getFullYear()}`;
+  }
+}
+
+function escHtml(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ── Navigation ────────────────────────────────────────────────────────────────
+async function schedNavigate(dir) {
+  if (schedState.view === 'daily') {
+    schedState.cursor = addDays(schedState.cursor, dir);
+  } else if (schedState.view === 'weekly') {
+    schedState.cursor = addDays(schedState.cursor, dir * 7);
+  } else {
+    const d = schedState.cursor;
+    schedState.cursor = new Date(d.getFullYear(), d.getMonth() + dir, 1);
+  }
+  await schedLoad();
+}
+
+async function schedLoad() {
+  updateDateLabel();
+  let start, end;
+  if (schedState.view === 'daily') {
+    start = end = schedState.cursor;
+  } else if (schedState.view === 'weekly') {
+    start = startOfWeek(schedState.cursor);
+    end = addDays(start, 6);
+  } else {
+    const y = schedState.cursor.getFullYear();
+    const m = schedState.cursor.getMonth();
+    start = new Date(y, m, 1);
+    end   = new Date(y, m+1, 0);
+  }
+  await loadScheduleRange(start, end);
+  schedRender();
+}
+
+function schedRender() {
+  if (schedState.view === 'daily')   renderDailyView();
+  else if (schedState.view === 'weekly')  renderWeeklyView();
+  else                               renderMonthlyView();
+}
+
+function schedGoDaily(dateStr) {
+  schedState.view = 'daily';
+  schedState.cursor = new Date(dateStr + 'T12:00:00');
+  document.querySelectorAll('.sched-tab').forEach(t => t.classList.toggle('sched-tab--active', t.dataset.view === 'daily'));
+  schedLoad();
+}
+
+// ── Actions ───────────────────────────────────────────────────────────────────
+async function schedToggleDone(id, dateStr) {
+  const blocks = schedState.blocks[dateStr] || [];
+  const b = blocks.find(x => x.id === id);
+  if (!b) return;
+  const newStatus = b.status === 'done' ? 'pending' : 'done';
+  await schedAPI(`/${id}`, 'PATCH', {status: newStatus});
+  b.status = newStatus;
+  // update stats
+  const total = blocks.length;
+  const done = blocks.filter(x => x.status === 'done').length;
+  schedState.stats[dateStr] = {total, done, pct: Math.round(done/total*100)};
+  schedRender();
+}
+
+async function schedDeleteBlock(id, dateStr) {
+  if (!confirm('Remover este bloco?')) return;
+  await schedAPI(`/${id}`, 'DELETE');
+  schedState.blocks[dateStr] = (schedState.blocks[dateStr]||[]).filter(b => b.id !== id);
+  // recalc stats
+  const blocks = schedState.blocks[dateStr] || [];
+  const total = blocks.length;
+  const done = blocks.filter(b => b.status === 'done').length;
+  schedState.stats[dateStr] = {total, done, pct: total ? Math.round(done/total*100) : 0};
+  schedRender();
+}
+
+function schedEditBlock(id, dateStr) {
+  const b = (schedState.blocks[dateStr]||[]).find(x => x.id === id);
+  if (!b) return;
+  schedState.editingBlock = b;
+  schedState.editingDate  = dateStr;
+  openBlockModal(b);
+}
+
+function schedOpenAddForDate(dateStr) {
+  schedState.editingBlock = null;
+  schedState.editingDate  = dateStr;
+  openBlockModal(null);
+}
+
+// ── Block Modal ───────────────────────────────────────────────────────────────
+function openBlockModal(block) {
+  closeBlockModal();
+  const overlay = document.createElement('div');
+  overlay.className = 'block-modal-overlay';
+  overlay.id = 'blockModalOverlay';
+  overlay.innerHTML = `
+    <div class="block-modal">
+      <h3>${block ? 'Editar bloco' : 'Novo bloco'}</h3>
+      <div class="block-modal-field">
+        <label>Atividade</label>
+        <input type="text" id="bmTitle" placeholder="Ex: Estudar Flutter" value="${block ? escHtml(block.title) : ''}" autofocus>
+      </div>
+      <div class="block-time-row">
+        <div class="block-modal-field">
+          <label>Início</label>
+          <input type="time" id="bmStart" value="${block ? block.start_time : '08:00'}">
+        </div>
+        <div class="block-modal-field">
+          <label>Fim</label>
+          <input type="time" id="bmEnd" value="${block ? block.end_time : '09:00'}">
+        </div>
+      </div>
+      <div class="block-modal-field">
+        <label>Cor</label>
+        <div class="color-picker">
+          ${['accent','green','orange','pink','blue','red'].map(c =>
+            `<div class="color-dot color-dot--${c} ${block && block.color===c || (!block && c==='accent') ? 'color-dot--selected' : ''}"
+              data-color="${c}" onclick="selectBlockColor('${c}')"></div>`
+          ).join('')}
+        </div>
+      </div>
+      <div class="block-modal-actions">
+        <button class="block-modal-cancel" onclick="closeBlockModal()">Cancelar</button>
+        <button class="block-modal-save" onclick="saveBlockModal()">Salvar</button>
+      </div>
+    </div>`;
+  document.body.appendChild(overlay);
+  overlay.addEventListener('click', e => { if (e.target === overlay) closeBlockModal(); });
+  setTimeout(() => document.getElementById('bmTitle')?.focus(), 50);
+}
+
+function closeBlockModal() {
+  document.getElementById('blockModalOverlay')?.remove();
+}
+
+function selectBlockColor(color) {
+  document.querySelectorAll('.color-dot').forEach(d => {
+    d.classList.toggle('color-dot--selected', d.dataset.color === color);
+  });
+}
+
+async function saveBlockModal() {
+  const title = document.getElementById('bmTitle')?.value.trim();
+  const start = document.getElementById('bmStart')?.value;
+  const end   = document.getElementById('bmEnd')?.value;
+  const color = document.querySelector('.color-dot--selected')?.dataset.color || 'accent';
+  if (!title) { alert('Informe o título'); return; }
+  if (!start || !end) { alert('Informe horários'); return; }
+
+  if (schedState.editingBlock) {
+    // Update
+    const res = await schedAPI(`/${schedState.editingBlock.id}`, 'PATCH', {title, start_time: start, end_time: end, color});
+    const dateStr = schedState.editingDate;
+    const idx = (schedState.blocks[dateStr]||[]).findIndex(b => b.id === schedState.editingBlock.id);
+    if (idx >= 0 && res.block) schedState.blocks[dateStr][idx] = {...schedState.blocks[dateStr][idx], ...res.block};
+  } else {
+    // Create
+    const dateStr = schedState.editingDate || toISO(schedState.cursor);
+    const res = await schedAPI('', 'POST', {title, start_time: start, end_time: end, color, date: dateStr});
+    if (res.block) {
+      if (!schedState.blocks[dateStr]) schedState.blocks[dateStr] = [];
+      schedState.blocks[dateStr].push(res.block);
+      // update stats
+      const total = schedState.blocks[dateStr].length;
+      const done = schedState.blocks[dateStr].filter(b => b.status === 'done').length;
+      schedState.stats[dateStr] = {total, done, pct: Math.round(done/total*100)};
+    }
+  }
+  closeBlockModal();
+  schedRender();
+}
+
+// ── Drag & Drop ───────────────────────────────────────────────────────────────
+function initDragDrop(dateStr) {
+  const blocks = document.querySelectorAll('.time-block');
+  let draggingId = null;
+  blocks.forEach(el => {
+    el.addEventListener('dragstart', e => {
+      draggingId = parseInt(el.dataset.id);
+      el.classList.add('time-block--dragging');
+      e.dataTransfer.effectAllowed = 'move';
+    });
+    el.addEventListener('dragend', () => el.classList.remove('time-block--dragging'));
+    el.addEventListener('dragover', e => { e.preventDefault(); el.classList.add('time-block--drag-over'); });
+    el.addEventListener('dragleave', () => el.classList.remove('time-block--drag-over'));
+    el.addEventListener('drop', async e => {
+      e.preventDefault();
+      el.classList.remove('time-block--drag-over');
+      const targetId = parseInt(el.dataset.id);
+      if (targetId === draggingId) return;
+      const dayBlocks = schedState.blocks[dateStr] || [];
+      const fromIdx = dayBlocks.findIndex(b => b.id === draggingId);
+      const toIdx   = dayBlocks.findIndex(b => b.id === targetId);
+      if (fromIdx < 0 || toIdx < 0) return;
+      // Swap positions
+      const tmp = dayBlocks[fromIdx];
+      dayBlocks.splice(fromIdx, 1);
+      dayBlocks.splice(toIdx, 0, tmp);
+      // Update positions
+      dayBlocks.forEach((b, i) => b.position = i);
+      schedRender();
+      // Persist new positions
+      await Promise.all(dayBlocks.map(b => schedAPI(`/${b.id}`, 'PATCH', {position: b.position})));
+    });
+  });
+}
+
+// ── Copy day modal ────────────────────────────────────────────────────────────
+function schedOpenCopyModal() {
+  const overlay = document.createElement('div');
+  overlay.className = 'block-modal-overlay';
+  overlay.id = 'copyModalOverlay';
+  const todayStr = toISO(schedState.cursor);
+  overlay.innerHTML = `
+    <div class="block-modal" style="width:340px">
+      <h3>Copiar rotina</h3>
+      <div class="block-modal-field">
+        <label>Origem</label>
+        <input type="date" id="cpySrc" value="${todayStr}">
+      </div>
+      <div class="block-modal-field">
+        <label>Destino</label>
+        <input type="date" id="cpyDst" value="${toISO(addDays(schedState.cursor, 1))}">
+      </div>
+      <div class="block-modal-actions">
+        <button class="block-modal-cancel" onclick="document.getElementById('copyModalOverlay').remove()">Cancelar</button>
+        <button class="block-modal-save" onclick="execCopyDay()">Copiar</button>
+      </div>
+    </div>`;
+  document.body.appendChild(overlay);
+}
+
+async function execCopyDay() {
+  const src = document.getElementById('cpySrc')?.value;
+  const dst = document.getElementById('cpyDst')?.value;
+  if (!src || !dst) return;
+  await schedAPI('/copy', 'POST', {source_date: src, target_date: dst});
+  document.getElementById('copyModalOverlay')?.remove();
+  // reload if target is visible
+  schedState.blocks = {}; schedState.stats = {};
+  await schedLoad();
+}
+
+// ── Templates ─────────────────────────────────────────────────────────────────
+async function schedOpenTemplates() {
+  const data = await schedAPI('/templates');
+  schedState.templates = data.templates || [];
+  const dateStr = toISO(schedState.cursor);
+  const overlay = document.createElement('div');
+  overlay.className = 'block-modal-overlay';
+  overlay.id = 'tplModalOverlay';
+  const tplItems = schedState.templates.length
+    ? schedState.templates.map(t => `
+      <div class="template-item">
+        <div>
+          <div class="template-name">${escHtml(t.name)}</div>
+          <div class="template-sub">${t.blocks.length} blocos</div>
+        </div>
+        <div class="template-actions">
+          <button class="template-apply-btn" onclick="applyTemplate(${t.id},'${dateStr}')">Aplicar</button>
+          <button class="template-del-btn" onclick="deleteTemplate(${t.id})" aria-label="Excluir template"><svg class="ui-icon" aria-hidden="true"><use href="#icon-x"></use></svg></button>
+        </div>
+      </div>`).join('')
+    : '<div style="color:var(--text3);font-size:13px;text-align:center;padding:20px 0">Nenhum template salvo</div>';
+
+  overlay.innerHTML = `
+    <div class="block-modal template-modal">
+      <h3>Templates de rotina</h3>
+      <div class="template-list">${tplItems}</div>
+      <div style="border-top:1px solid var(--border);padding-top:12px;margin-top:4px">
+        <div style="font-size:12px;color:var(--text3);margin-bottom:8px">Salvar rotina atual como template:</div>
+        <div class="template-save-row">
+          <input type="text" id="tplNameInput" placeholder="Nome do template">
+          <button onclick="saveCurrentAsTemplate('${dateStr}')">Salvar</button>
+        </div>
+      </div>
+      <div class="block-modal-actions">
+        <button class="block-modal-cancel" onclick="document.getElementById('tplModalOverlay').remove()">Fechar</button>
+      </div>
+    </div>`;
+  document.body.appendChild(overlay);
+  overlay.addEventListener('click', e => { if (e.target === overlay) overlay.remove(); });
+}
+
+async function applyTemplate(tplId, dateStr) {
+  await schedAPI(`/templates/${tplId}/apply`, 'POST', {date: dateStr});
+  document.getElementById('tplModalOverlay')?.remove();
+  schedState.blocks = {}; schedState.stats = {};
+  await schedLoad();
+}
+
+async function deleteTemplate(tplId) {
+  if (!confirm('Remover template?')) return;
+  await schedAPI(`/templates/${tplId}`, 'DELETE');
+  document.getElementById('tplModalOverlay')?.remove();
+  schedOpenTemplates();
+}
+
+async function saveCurrentAsTemplate(dateStr) {
+  const name = document.getElementById('tplNameInput')?.value.trim();
+  if (!name) { alert('Informe o nome'); return; }
+  const blocks = (schedState.blocks[dateStr] || []).map(b => ({
+    title: b.title, start_time: b.start_time, end_time: b.end_time, color: b.color,
+  }));
+  if (!blocks.length) { alert('Nenhum bloco neste dia'); return; }
+  await schedAPI('/templates', 'POST', {name, blocks});
+  document.getElementById('tplModalOverlay')?.remove();
+  alert('Template salvo!');
+}
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+let _schedInited = false;
+function initSchedule() {
+  if (_schedInited) { schedLoad(); return; }
+  _schedInited = true;
+  // View tabs
+  document.querySelectorAll('.sched-tab').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      document.querySelectorAll('.sched-tab').forEach(t => t.classList.remove('sched-tab--active'));
+      btn.classList.add('sched-tab--active');
+      schedState.view = btn.dataset.view;
+      schedState.blocks = {}; schedState.stats = {};
+      await schedLoad();
+    });
+  });
+  // Nav
+  document.getElementById('schedPrev')?.addEventListener('click', () => schedNavigate(-1));
+  document.getElementById('schedNext')?.addEventListener('click', () => schedNavigate(1));
+  // Actions
+  document.getElementById('schedAddBtn')?.addEventListener('click', () => {
+    schedState.editingBlock = null;
+    schedState.editingDate  = toISO(schedState.cursor);
+    openBlockModal(null);
+  });
+  document.getElementById('schedCopyBtn')?.addEventListener('click', schedOpenCopyModal);
+  document.getElementById('schedTemplatesBtn')?.addEventListener('click', schedOpenTemplates);
+
+  schedLoad();
+}
+
+// initSchedule is called directly from app.js initNav() via the patched app.js
+</script>
+{% endblock %}
