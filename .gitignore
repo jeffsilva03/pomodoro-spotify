@@ -6,3 +6,7 @@ instance/
 *.db
 .pytest_cache/
 .DS_Store
+.env.*
+!.env.example
+.venv/
+*.log
